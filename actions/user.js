@@ -1,4 +1,3 @@
-
 "use server";
 
 import { db } from "@/lib/prisma";
@@ -29,20 +28,6 @@ export async function updateUser(data) {
 
         // If industry doesn't exist, create it with default values
         if (!industryInsight) {
-
-          // industryInsight = await tx.industryInsight.create({
-          //   data: {
-          //     industry: data.industry,
-          //     salaryRanges:[],
-          //     growthRate: 0,
-          //     demandLevel:"Medium",
-          //     topSkills: [],
-          //     marketOutlook: "Stable",
-          //     keyTrends: [],
-          //     recommendedSkills: [],
-          //     nextUpdate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-          //   },
-          // });
           const insights = await generateAIInsights(data.industry);
 
           industryInsight = await db.industryInsight.create({
@@ -67,7 +52,7 @@ export async function updateUser(data) {
           },
         });
 
-        return { updatedUser, industryInsight };
+        return { success: true, user: updatedUser, industryInsight };
       },
       {
         timeout: 10000, // default: 5000
@@ -75,7 +60,8 @@ export async function updateUser(data) {
     );
 
     revalidatePath("/");
-    return result.user;
+    revalidatePath("/profile");
+    return result;
   } catch (error) {
     console.error("Error updating user and industry:", error.message);
     throw new Error("Failed to update profile");
