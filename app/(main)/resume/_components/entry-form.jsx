@@ -15,7 +15,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { entrySchema } from "@/app/lib/schema";
+import { 
+  experienceEntrySchema, 
+  educationEntrySchema, 
+  projectEntrySchema 
+} from "@/app/lib/schema";
 import { Sparkles, PlusCircle, X, Pencil, Save, Loader2 } from "lucide-react";
 import { improveWithAI } from "@/actions/resume";
 import { toast } from "sonner";
@@ -27,8 +31,52 @@ const formatDisplayDate = (dateString) => {
   return format(date, "MMM yyyy");
 };
 
+const getSchemaForType = (type) => {
+  switch (type) {
+    case "Experience":
+      return experienceEntrySchema;
+    case "Education":
+      return educationEntrySchema;
+    case "Project":
+      return projectEntrySchema;
+    default:
+      return experienceEntrySchema;
+  }
+};
+
+const getPlaceholders = (type) => {
+  switch (type) {
+    case "Experience":
+      return {
+        title: "Job Title/Position",
+        organization: "Company",
+        description: "Describe your role, responsibilities, and achievements (minimum 50 characters)..."
+      };
+    case "Education":
+      return {
+        title: "Degree/Certification",
+        organization: "Institution/University",
+        description: "Describe your academic achievements, coursework, or research (minimum 10 characters)..."
+      };
+    case "Project":
+      return {
+        title: "Project Name",
+        organization: "Technologies/Tools Used",
+        description: "Describe the project, your role, and outcomes (minimum 30 characters)..."
+      };
+    default:
+      return {
+        title: "",
+        organization: "",
+        description: ""
+      };
+  }
+};
+
 export function EntryForm({ type, entries, onChange }) {
   const [isAdding, setIsAdding] = useState(false);
+  const [isImproving, setIsImproving] = useState(false);
+  const placeholders = getPlaceholders(type);
 
   const {
     register,
@@ -38,7 +86,7 @@ export function EntryForm({ type, entries, onChange }) {
     watch,
     setValue,
   } = useForm({
-    resolver: zodResolver(entrySchema),
+    resolver: zodResolver(getSchemaForType(type)),
     defaultValues: {
       title: "",
       organization: "",
@@ -50,6 +98,7 @@ export function EntryForm({ type, entries, onChange }) {
   });
 
   const current = watch("current");
+  const description = watch("description");
 
   const handleAdd = handleValidation((data) => {
     const formattedEntry = {
@@ -59,7 +108,6 @@ export function EntryForm({ type, entries, onChange }) {
     };
 
     onChange([...entries, formattedEntry]);
-
     reset();
     setIsAdding(false);
   });
@@ -69,36 +117,22 @@ export function EntryForm({ type, entries, onChange }) {
     onChange(newEntries);
   };
 
-  const {
-    loading: isImproving,
-    fn: improveWithAIFn,
-    data: improvedContent,
-    error: improveError,
-  } = useFetch(improveWithAI);
-
-  // Add this effect to handle the improvement result
-  useEffect(() => {
-    if (improvedContent && !isImproving) {
-      setValue("description", improvedContent);
-      toast.success("Description improved successfully!");
-    }
-    if (improveError) {
-      toast.error(improveError.message || "Failed to improve description");
-    }
-  }, [improvedContent, improveError, isImproving, setValue]);
-
-  // Replace handleImproveDescription with this
   const handleImproveDescription = async () => {
-    const description = watch("description");
-    if (!description) {
-      toast.error("Please enter a description first");
-      return;
+    if (!description) return;
+    
+    setIsImproving(true);
+    try {
+      const improved = await improveWithAI({
+        current: description,
+        type: type,
+      });
+      setValue("description", improved);
+      toast.success("Description improved!");
+    } catch (error) {
+      toast.error(error.message || "Failed to improve description");
+    } finally {
+      setIsImproving(false);
     }
-
-    await improveWithAIFn({
-      current: description,
-      type: type.toLowerCase(), // 'experience', 'education', or 'project'
-    });
   };
 
   return (
@@ -139,104 +173,40 @@ export function EntryForm({ type, entries, onChange }) {
             <CardTitle>Add {type}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {type === "Experience" && (
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">
-                    Job Title/Position <span className="text-red-500">*</span>
-                  </label>
-                  <Input
-                    placeholder="Job Title/Position"
-                    {...register("title")}
-                    className={errors.title ? "border-red-500" : ""}
-                  />
-                  {errors.title && (
-                    <p className="text-sm text-red-500 animate-pulse">{errors.title.message}</p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">
-                    Company <span className="text-red-500">*</span>
-                  </label>
-                  <Input
-                    placeholder="Company"
-                    {...register("organization")}
-                    className={errors.organization ? "border-red-500" : ""}
-                  />
-                  {errors.organization && (
-                    <p className="text-sm text-red-500 animate-pulse">
-                      {errors.organization.message}
-                    </p>
-                  )}
-                </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  {type === "Experience" ? "Job Title/Position" :
+                   type === "Education" ? "Degree/Certification" :
+                   "Project Name"} <span className="text-red-500">*</span>
+                </label>
+                <Input
+                  placeholder={placeholders.title}
+                  {...register("title")}
+                  className={errors.title ? "border-red-500" : ""}
+                />
+                {errors.title && (
+                  <p className="text-sm text-red-500 animate-pulse">{errors.title.message}</p>
+                )}
               </div>
-            )}
-
-            {type === "Education" && (
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">
-                    Degree/Certification <span className="text-red-500">*</span>
-                  </label>
-                  <Input
-                    placeholder="Degree/Certification"
-                    {...register("title")}
-                    className={errors.title ? "border-red-500" : ""}
-                  />
-                  {errors.title && (
-                    <p className="text-sm text-red-500 animate-pulse">{errors.title.message}</p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">
-                    Institution/University <span className="text-red-500">*</span>
-                  </label>
-                  <Input
-                    placeholder="Institution/University"
-                    {...register("organization")}
-                    className={errors.organization ? "border-red-500" : ""}
-                  />
-                  {errors.organization && (
-                    <p className="text-sm text-red-500 animate-pulse">
-                      {errors.organization.message}
-                    </p>
-                  )}
-                </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  {type === "Experience" ? "Company" :
+                   type === "Education" ? "Institution/University" :
+                   "Technologies/Tools"} <span className="text-red-500">*</span>
+                </label>
+                <Input
+                  placeholder={placeholders.organization}
+                  {...register("organization")}
+                  className={errors.organization ? "border-red-500" : ""}
+                />
+                {errors.organization && (
+                  <p className="text-sm text-red-500 animate-pulse">
+                    {errors.organization.message}
+                  </p>
+                )}
               </div>
-            )}
-
-            {type === "Project" && (
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">
-                    Project Name <span className="text-red-500">*</span>
-                  </label>
-                  <Input
-                    placeholder="Project Name"
-                    {...register("title")}
-                    className={errors.title ? "border-red-500" : ""}
-                  />
-                  {errors.title && (
-                    <p className="text-sm text-red-500 animate-pulse">{errors.title.message}</p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">
-                    Technologies Used <span className="text-red-500">*</span>
-                  </label>
-                  <Input
-                    placeholder="Technologies Used"
-                    {...register("organization")}
-                    className={errors.organization ? "border-red-500" : ""}
-                  />
-                  {errors.organization && (
-                    <p className="text-sm text-red-500 animate-pulse">
-                      {errors.organization.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
+            </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -294,7 +264,7 @@ export function EntryForm({ type, entries, onChange }) {
                 Description <span className="text-red-500">*</span>
               </label>
               <Textarea
-                placeholder={`Description of your ${type.toLowerCase()} (minimum 10 characters)`}
+                placeholder={placeholders.description}
                 className={`h-32 ${errors.description ? "border-red-500" : ""}`}
                 {...register("description")}
               />
@@ -308,7 +278,7 @@ export function EntryForm({ type, entries, onChange }) {
               variant="ghost"
               size="sm"
               onClick={handleImproveDescription}
-              disabled={isImproving || !watch("description")}
+              disabled={isImproving || !description}
             >
               {isImproving ? (
                 <>

@@ -49,8 +49,6 @@ model Resume {
   userId      String    @unique    // One resume per user
   user        User      @relation(fields: [userId], references: [id])
   content     String    @db.Text // Markdown content
-  atsScore    Float?
-  feedback    String?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 }

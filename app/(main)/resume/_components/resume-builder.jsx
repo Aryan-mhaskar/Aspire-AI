@@ -91,7 +91,7 @@ export default function ResumeBuilder({ initialContent }) {
     if (contactInfo.twitter) parts.push(`🐦 [Twitter](${contactInfo.twitter})`);
 
     return parts.length > 0
-      ? `## <div align="center">${user.fullName}</div>
+      ? `## <div align="center">${user?.fullName || 'Your Name'}</div>
         \n\n<div align="center">\n\n${parts.join(" | ")}\n\n</div>`
       : "";
   };

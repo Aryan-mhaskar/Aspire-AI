@@ -157,6 +157,108 @@ export const entrySchema = z
     }
   );
 
+const validateDates = (data) => {
+  if (data.current) return true;
+  if (!data.startDate || !data.endDate) return true;
+  
+  const startDate = new Date(data.startDate);
+  const endDate = new Date(data.endDate);
+  return endDate >= startDate;
+};
+
+export const experienceEntrySchema = z
+  .object({
+    title: z.string().min(2, "Job title must be at least 2 characters"),
+    organization: z.string()
+      .min(2, "Company name must be at least 2 characters")
+      .regex(/^[a-zA-Z0-9\s\-&.,()]+$/, "Company name contains invalid characters"),
+    startDate: z.string().min(1, "Start date is required"),
+    endDate: z.string().optional(),
+    description: z.string().min(50, "Description must be at least 50 characters to properly detail your work experience"),
+    current: z.boolean().default(false),
+  })
+  .refine(
+    (data) => {
+      if (!data.current && !data.endDate) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "End date is required unless this is your current position",
+      path: ["endDate"],
+    }
+  )
+  .refine(
+    validateDates,
+    {
+      message: "End date must be after start date",
+      path: ["endDate"],
+    }
+  );
+
+export const educationEntrySchema = z
+  .object({
+    title: z.string().min(2, "Degree/Certification must be at least 2 characters"),
+    organization: z.string()
+      .min(2, "Institution name must be at least 2 characters")
+      .regex(/^[a-zA-Z0-9\s\-&.,()]+$/, "Institution name contains invalid characters"),
+    startDate: z.string().min(1, "Start date is required"),
+    endDate: z.string().optional(),
+    description: z.string().min(10, "Description must be at least 10 characters"),
+    current: z.boolean().default(false),
+  })
+  .refine(
+    (data) => {
+      if (!data.current && !data.endDate) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "End date is required unless you are currently studying",
+      path: ["endDate"],
+    }
+  )
+  .refine(
+    validateDates,
+    {
+      message: "End date must be after start date",
+      path: ["endDate"],
+    }
+  );
+
+export const projectEntrySchema = z
+  .object({
+    title: z.string().min(2, "Project name must be at least 2 characters"),
+    organization: z.string()
+      .min(2, "Technologies/Tools must be at least 2 characters")
+      .regex(/^[a-zA-Z0-9\s\-&.,()#+]+$/, "Technologies/Tools contains invalid characters"),
+    startDate: z.string().min(1, "Start date is required"),
+    endDate: z.string().optional(),
+    description: z.string().min(30, "Description must be at least 30 characters to properly explain your project"),
+    current: z.boolean().default(false),
+  })
+  .refine(
+    (data) => {
+      if (!data.current && !data.endDate) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "End date is required unless this is an ongoing project",
+      path: ["endDate"],
+    }
+  )
+  .refine(
+    validateDates,
+    {
+      message: "End date must be after start date",
+      path: ["endDate"],
+    }
+  );
+
 export const resumeSchema = z.object({
   contactInfo: contactSchema,
   summary: z
@@ -172,15 +274,15 @@ export const resumeSchema = z.object({
       "Please enter at least 3 skills"
     ),
   experience: z
-    .array(entrySchema)
+    .array(experienceEntrySchema)
     .min(1, "Please add at least one work experience entry")
     .max(10, "Maximum 10 work experiences allowed"),
   education: z
-    .array(entrySchema)
+    .array(educationEntrySchema)
     .min(1, "Please add at least one education entry")
     .max(5, "Maximum 5 education entries allowed"),
   projects: z
-    .array(entrySchema)
+    .array(projectEntrySchema)
     .max(8, "Maximum 8 projects allowed"),
 });
 
