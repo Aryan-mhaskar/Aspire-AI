@@ -220,15 +220,15 @@ export default function ResumeBuilder({ initialContent }) {
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 border rounded-xl bg-gradient-to-br from-white to-gray-50 shadow-sm hover:shadow-md transition-all duration-300">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Email</label>
+                  <label className="text-sm font-medium">Email <span className="text-red-500">*</span></label>
                   <Input
                     {...register("contactInfo.email")}
                     type="email"
                     placeholder="your@gmail.com"
-                    error={errors.contactInfo?.email}
+                    className={errors.contactInfo?.email ? "border-red-500" : ""}
                   />
                   {errors.contactInfo?.email && (
-                    <p className="text-sm text-red-500">
+                    <p className="text-sm text-red-500 animate-pulse">
                       {errors.contactInfo.email.message}
                     </p>
                   )}
@@ -239,9 +239,10 @@ export default function ResumeBuilder({ initialContent }) {
                     {...register("contactInfo.mobile")}
                     type="tel"
                     placeholder="+91 1234567890"
+                    className={errors.contactInfo?.mobile ? "border-red-500" : ""}
                   />
                   {errors.contactInfo?.mobile && (
-                    <p className="text-sm text-red-500">
+                    <p className="text-sm text-red-500 animate-pulse">
                       {errors.contactInfo.mobile.message}
                     </p>
                   )}
@@ -252,9 +253,10 @@ export default function ResumeBuilder({ initialContent }) {
                     {...register("contactInfo.linkedin")}
                     type="url"
                     placeholder="https://linkedin.com/in/your-profile"
+                    className={errors.contactInfo?.linkedin ? "border-red-500" : ""}
                   />
                   {errors.contactInfo?.linkedin && (
-                    <p className="text-sm text-red-500">
+                    <p className="text-sm text-red-500 animate-pulse">
                       {errors.contactInfo.linkedin.message}
                     </p>
                   )}
@@ -280,45 +282,51 @@ export default function ResumeBuilder({ initialContent }) {
             {/* Summary */}
             <div className="space-y-4 p-6 border rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-300">
               <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">
-                Professional Summary
+                Professional Summary <span className="text-red-500">*</span>
               </h3>
-              <Controller
-                name="summary"
-                control={control}
-                render={({ field }) => (
-                  <Textarea
-                    {...field}
-                    className="h-32 focus:ring-2 focus:ring-blue-500 transition-all duration-300"
-                    placeholder="Write a compelling professional summary..."
-                    error={errors.summary}
-                  />
+              <div className="space-y-2">
+                <Controller
+                  name="summary"
+                  control={control}
+                  render={({ field }) => (
+                    <Textarea
+                      {...field}
+                      className={`h-32 focus:ring-2 focus:ring-blue-500 transition-all duration-300 ${
+                        errors.summary ? "border-red-500" : ""
+                      }`}
+                      placeholder="Write a compelling professional summary (minimum 50 characters)..."
+                    />
+                  )}
+                />
+                {errors.summary && (
+                  <p className="text-sm text-red-500 animate-pulse">{errors.summary.message}</p>
                 )}
-              />
-              {errors.summary && (
-                <p className="text-sm text-red-500 animate-pulse">{errors.summary.message}</p>
-              )}
+              </div>
             </div>
 
             {/* Skills */}
             <div className="space-y-4 p-6 border rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-300">
               <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">
-                Skills
+                Skills <span className="text-red-500">*</span>
               </h3>
-              <Controller
-                name="skills"
-                control={control}
-                render={({ field }) => (
-                  <Textarea
-                    {...field}
-                    className="h-32 focus:ring-2 focus:ring-blue-500 transition-all duration-300"
-                    placeholder="List your key skills..."
-                    error={errors.skills}
-                  />
+              <div className="space-y-2">
+                <Controller
+                  name="skills"
+                  control={control}
+                  render={({ field }) => (
+                    <Textarea
+                      {...field}
+                      className={`h-32 focus:ring-2 focus:ring-blue-500 transition-all duration-300 ${
+                        errors.skills ? "border-red-500" : ""
+                      }`}
+                      placeholder="List your key skills (comma-separated, minimum 3 skills)..."
+                    />
+                  )}
+                />
+                {errors.skills && (
+                  <p className="text-sm text-red-500 animate-pulse">{errors.skills.message}</p>
                 )}
-              />
-              {errors.skills && (
-                <p className="text-sm text-red-500 animate-pulse">{errors.skills.message}</p>
-              )}
+              </div>
             </div>
 
             {/* Experience */}

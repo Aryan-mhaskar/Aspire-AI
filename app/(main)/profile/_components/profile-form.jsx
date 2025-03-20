@@ -37,7 +37,11 @@ const profileSchema = z.object({
   subIndustry: z.string().optional(),
   bio: z.string().max(500).optional(),
   experience: z.string()
-    .transform((val) => val ? parseInt(val, 10) : undefined)
+    .transform((val) => {
+      if (!val) return undefined;
+      const parsed = parseFloat(val);
+      return isNaN(parsed) ? undefined : Number(parsed.toFixed(1));
+    })
     .pipe(
       z.number()
         .min(0, "Experience must be at least 0 years")
@@ -216,7 +220,8 @@ const ProfileForm = ({ industries, userData }) => {
                 type="number"
                 min="0"
                 max="50"
-                placeholder="Enter years of experience"
+                step="0.1"
+                placeholder="Enter years of experience (e.g., 2.5)"
                 className="bg-white border-gray-200 hover:border-blue-300 transition-colors focus:border-blue-500"
                 {...register("experience")}
               />

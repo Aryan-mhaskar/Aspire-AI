@@ -373,7 +373,7 @@ const OnboardingForm = ({ industries }) => {
               <Label htmlFor="experience">Years of Experience</Label>
               <Input
                 id="experience"
-                type="number"
+                type="float"
                 min="0"
                 max="50"
                 placeholder="Enter years of experience"

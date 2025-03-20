@@ -1,3 +1,5 @@
+"use client";
+
 import HeroSection from "@/components/hero";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
@@ -9,8 +11,31 @@ import { testimonial } from "@/data/testimonial";
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useAuth } from "@clerk/nextjs";
 
 export default function Home() {
+  const { isSignedIn } = useAuth();
+
+  const getFeatureLink = (feature) => {
+    if (!isSignedIn) return "/sign-in";
+    
+    // Return specific routes based on feature
+    switch (feature.title) {
+      case "Smart Resume Creation":
+        return "/resume";
+      case "Interview Preparation":
+        return "/interview";
+      case "AI Cover Letter":
+        return "/ai-cover-letter";
+      case "Career Insights":
+        return "/dashboard";
+      case "Interview Quiz":
+        return "/interview/mock";
+      default:
+        return "/dashboard";
+    }
+  };
+
   return (
     <div>
       <div className="grid-background"></div>
@@ -22,23 +47,20 @@ export default function Home() {
           <h2 className="text-3xl font-bold tracking-tighter text-center mb-12">
             Powerful Features for Your Career Growth
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {features.map((feature, index) => (
-              <Link href="/sign-in" key={index}>
-              <Card
-                // key={index}
-                className="border-2 hover:border-primary transition-colors duration-300"
-              >
-                <CardContent className="pt-6 text-center flex flex-col items-center">
-                  <div className="flex flex-col items-center justify-center">
-                    {feature.icon}
-                    <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
-                    <p className="text-muted-foreground">
-                      {feature.description}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+              <Link href={getFeatureLink(feature)} key={index}>
+                <Card className="border-2 hover:border-primary transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1">
+                  <CardContent className="pt-6 pb-4 text-center flex flex-col items-center h-full">
+                    <div className="flex flex-col items-center justify-center h-full">
+                      {feature.icon}
+                      <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
+                      <p className="text-muted-foreground text-sm">
+                        {feature.description}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
               </Link>
             ))}
           </div>
@@ -96,7 +118,9 @@ export default function Home() {
           </div>
         </div>
       </section> */}
-      <section className="w-full py-12 md:py-24 bg-blue-100 mt-12">
+
+
+      {/* <section className="w-full py-12 md:py-24 bg-blue-100 mt-12">
   <div className="container mx-auto px-4 md:px-6">
     <div className="text-center max-w-3xl mx-auto mb-12">
       <h2 className="text-3xl font-bold mb-4">How It Works</h2>
@@ -120,7 +144,7 @@ export default function Home() {
       ))}
     </div>
   </div>
-</section>
+</section> */}
 
 
       <section className="w-full py-12 md:py-24 bg-orange-100 mt-12">

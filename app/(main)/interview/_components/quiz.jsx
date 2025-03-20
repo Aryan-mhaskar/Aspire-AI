@@ -16,6 +16,7 @@ import { generateQuiz, saveQuizResult } from "@/actions/interview";
 import QuizResult from "./quiz-result";
 import useFetch from "@/hooks/use-fetch";
 import { BarLoader } from "react-spinners";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
 export default function Quiz() {
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -53,6 +54,13 @@ export default function Quiz() {
       setShowExplanation(false);
     } else {
       finishQuiz();
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentQuestion > 0) {
+      setCurrentQuestion(currentQuestion - 1);
+      setShowExplanation(false);
     }
   };
 
@@ -122,10 +130,16 @@ export default function Quiz() {
 
   return (
     <Card className="mx-2">
-      <CardHeader>
+      <CardHeader className="space-y-4">
         <CardTitle>
           Question {currentQuestion + 1} of {quizData.length}
         </CardTitle>
+        <div className="w-full bg-gray-200 rounded-full h-2">
+          <div 
+            className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+            style={{ width: `${((currentQuestion + 1) / quizData.length) * 100}%` }}
+          />
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         <p className="text-lg font-medium">{question.question}</p>
@@ -149,27 +163,46 @@ export default function Quiz() {
           </div>
         )}
       </CardContent>
-      <CardFooter className="flex justify-between">
-        {!showExplanation && (
+      <CardFooter className="flex justify-between space-x-4">
+        <div className="flex space-x-4">
           <Button
-            onClick={() => setShowExplanation(true)}
+            onClick={handlePrevious}
             variant="outline"
-            disabled={!answers[currentQuestion]}
+            disabled={currentQuestion === 0}
+            className="flex items-center gap-2"
           >
-            Show Explanation
+            <ArrowLeft className="w-4 h-4" />
+            Previous
           </Button>
-        )}
+          {!showExplanation && (
+            <Button
+              onClick={() => setShowExplanation(true)}
+              variant="outline"
+              disabled={!answers[currentQuestion]}
+            >
+              Show Explanation
+            </Button>
+          )}
+        </div>
         <Button
           onClick={handleNext}
           disabled={!answers[currentQuestion] || savingResult}
-          className="ml-auto"
+          className="flex items-center gap-2"
         >
-          {savingResult && (
-            <BarLoader className="mt-4" width={"100%"} color="gray" />
+          {savingResult ? (
+            <BarLoader width={24} color="white" />
+          ) : (
+            <>
+              {currentQuestion < quizData.length - 1 ? (
+                <>
+                  Next
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              ) : (
+                "Finish Quiz"
+              )}
+            </>
           )}
-          {currentQuestion < quizData.length - 1
-            ? "Next Question"
-            : "Finish Quiz"}
         </Button>
       </CardFooter>
     </Card>

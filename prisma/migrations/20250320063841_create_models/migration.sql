@@ -9,7 +9,7 @@ CREATE TABLE "User" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "bio" TEXT,
-    "experience" INTEGER,
+    "experience" DOUBLE PRECISION,
     "skills" TEXT[],
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")

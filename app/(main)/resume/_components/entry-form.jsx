@@ -142,23 +142,31 @@ export function EntryForm({ type, entries, onChange }) {
             {type === "Experience" && (
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
+                  <label className="text-sm font-medium">
+                    Job Title/Position <span className="text-red-500">*</span>
+                  </label>
                   <Input
                     placeholder="Job Title/Position"
                     {...register("title")}
-                    error={errors.title}
+                    className={errors.title ? "border-red-500" : ""}
                   />
                   {errors.title && (
-                    <p className="text-sm text-red-500">{errors.title.message}</p>
+                    <p className="text-sm text-red-500 animate-pulse">{errors.title.message}</p>
                   )}
                 </div>
                 <div className="space-y-2">
+                  <label className="text-sm font-medium">
+                    Company <span className="text-red-500">*</span>
+                  </label>
                   <Input
                     placeholder="Company"
                     {...register("organization")}
-                    error={errors.organization}
+                    className={errors.organization ? "border-red-500" : ""}
                   />
                   {errors.organization && (
-                    <p className="text-sm text-red-500">{errors.organization.message}</p>
+                    <p className="text-sm text-red-500 animate-pulse">
+                      {errors.organization.message}
+                    </p>
                   )}
                 </div>
               </div>
@@ -167,79 +175,95 @@ export function EntryForm({ type, entries, onChange }) {
             {type === "Education" && (
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
+                  <label className="text-sm font-medium">
+                    Degree/Certification <span className="text-red-500">*</span>
+                  </label>
                   <Input
                     placeholder="Degree/Certification"
                     {...register("title")}
-                    error={errors.title}
+                    className={errors.title ? "border-red-500" : ""}
                   />
                   {errors.title && (
-                    <p className="text-sm text-red-500">{errors.title.message}</p>
+                    <p className="text-sm text-red-500 animate-pulse">{errors.title.message}</p>
                   )}
                 </div>
                 <div className="space-y-2">
+                  <label className="text-sm font-medium">
+                    Institution/University <span className="text-red-500">*</span>
+                  </label>
                   <Input
                     placeholder="Institution/University"
                     {...register("organization")}
-                    error={errors.organization}
+                    className={errors.organization ? "border-red-500" : ""}
                   />
                   {errors.organization && (
-                    <p className="text-sm text-red-500">{errors.organization.message}</p>
+                    <p className="text-sm text-red-500 animate-pulse">
+                      {errors.organization.message}
+                    </p>
                   )}
                 </div>
               </div>
             )}
 
             {type === "Project" && (
-              <>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Input
-                      placeholder="Project Name"
-                      {...register("title")}
-                      error={errors.title}
-                    />
-                    {errors.title && (
-                      <p className="text-sm text-red-500">{errors.title.message}</p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Input
-                      placeholder="Technologies Used"
-                      {...register("organization")}
-                      error={errors.organization}
-                    />
-                    {errors.organization && (
-                      <p className="text-sm text-red-500">{errors.organization.message}</p>
-                    )}
-                  </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">
+                    Project Name <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    placeholder="Project Name"
+                    {...register("title")}
+                    className={errors.title ? "border-red-500" : ""}
+                  />
+                  {errors.title && (
+                    <p className="text-sm text-red-500 animate-pulse">{errors.title.message}</p>
+                  )}
                 </div>
-                {/* <Input
-                  placeholder="Project URL (GitHub/Live Demo)"
-                  {...register("projectUrl")}
-                /> */}
-              </>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">
+                    Technologies Used <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    placeholder="Technologies Used"
+                    {...register("organization")}
+                    className={errors.organization ? "border-red-500" : ""}
+                  />
+                  {errors.organization && (
+                    <p className="text-sm text-red-500 animate-pulse">
+                      {errors.organization.message}
+                    </p>
+                  )}
+                </div>
+              </div>
             )}
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  Start Date <span className="text-red-500">*</span>
+                </label>
                 <Input
                   type="month"
                   {...register("startDate")}
-                  error={errors.startDate}
+                  className={errors.startDate ? "border-red-500" : ""}
                 />
                 {errors.startDate && (
-                  <p className="text-sm text-red-500">{errors.startDate.message}</p>
+                  <p className="text-sm text-red-500 animate-pulse">{errors.startDate.message}</p>
                 )}
               </div>
               <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  End Date {!current && <span className="text-red-500">*</span>}
+                </label>
                 <Input
                   type="month"
                   {...register("endDate")}
                   disabled={current}
-                  error={errors.endDate}
+                  className={errors.endDate ? "border-red-500" : ""}
                 />
                 {errors.endDate && (
-                  <p className="text-sm text-red-500">{errors.endDate.message}</p>
+                  <p className="text-sm text-red-500 animate-pulse">{errors.endDate.message}</p>
                 )}
               </div>
             </div>
@@ -266,14 +290,16 @@ export function EntryForm({ type, entries, onChange }) {
             </div>
 
             <div className="space-y-2">
+              <label className="text-sm font-medium">
+                Description <span className="text-red-500">*</span>
+              </label>
               <Textarea
-                placeholder={`Description of your ${type.toLowerCase()}`}
-                className="h-32"
+                placeholder={`Description of your ${type.toLowerCase()} (minimum 10 characters)`}
+                className={`h-32 ${errors.description ? "border-red-500" : ""}`}
                 {...register("description")}
-                error={errors.description}
               />
               {errors.description && (
-                <p className="text-sm text-red-500">{errors.description.message}</p>
+                <p className="text-sm text-red-500 animate-pulse">{errors.description.message}</p>
               )}
             </div>
 
