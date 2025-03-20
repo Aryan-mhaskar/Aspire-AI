@@ -32,10 +32,12 @@ const HeroSection = () => {
     <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:60px_60px]" />
     <div className="relative z-10">
       <div className="space-y-6 text-center">
-        <h1 className="text-5xl font-bold md:text-6xl lg:text-7xl xl:text-8xl bg-gradient-to-r from-blue-600 via-purple-500 to-indigo-600 bg-clip-text text-transparent animate-gradient">
-  Your AI Career Coach
+        <h1 className="text-5xl font-bold md:text-6xl lg:text-7xl xl:text-8xl bg-gradient-to-r from-blue-600 via-purple-500 to-indigo-600 bg-clip-text text-transparent animate-gradient mb-6">
+  {/* Your AI Career Coach */}
+  Navigate Your Success
   <br />
-  Professional Success
+  {/* Professional Success */}
+  With AI Intelligence
 </h1>
 <p className="mx-auto max-w-[600px] text-slate-300 md:text-xl font-medium">
   Advance your career with personalized guidance, interview prep, and AI-powered tools for job success.
