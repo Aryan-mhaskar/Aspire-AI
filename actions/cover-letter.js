@@ -120,3 +120,25 @@ export async function deleteCoverLetter(id) {
     },
   });
 }
+
+export async function saveCoverLetterContent(id, content) {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+
+  try {
+    const coverLetter = await db.coverLetter.update({
+      where: {
+        id,
+        userId: (await db.user.findUnique({ where: { clerkUserId: userId } })).id,
+      },
+      data: {
+        content,
+      },
+    });
+
+    return coverLetter;
+  } catch (error) {
+    console.error("Error saving cover letter:", error.message);
+    throw new Error("Failed to save cover letter");
+  }
+}

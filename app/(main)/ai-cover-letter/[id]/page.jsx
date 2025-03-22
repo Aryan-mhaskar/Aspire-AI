@@ -5,7 +5,7 @@ import { getCoverLetter } from "@/actions/cover-letter";
 import CoverLetterPreview from "../_components/cover-letter-preview";
 
 export default async function EditCoverLetterPage({ params }) {
-  const { id } = await params;
+  const { id } = params;
   const coverLetter = await getCoverLetter(id);
 
   return (
@@ -23,7 +23,7 @@ export default async function EditCoverLetterPage({ params }) {
         </h1>
       </div>
 
-      <CoverLetterPreview content={coverLetter?.content} />
+      <CoverLetterPreview content={coverLetter?.content} coverId={id} />
     </div>
   );
 }

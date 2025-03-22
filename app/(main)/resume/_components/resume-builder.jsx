@@ -30,12 +30,15 @@ export default function ResumeBuilder({ initialContent }) {
   const [previewContent, setPreviewContent] = useState(initialContent);
   const { user } = useUser();
   const [resumeMode, setResumeMode] = useState("preview");
+  const [isDirectEditing, setIsDirectEditing] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const {
     control,
     register,
     handleSubmit,
     watch,
+    reset,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(resumeSchema),
@@ -110,8 +113,6 @@ export default function ResumeBuilder({ initialContent }) {
       .join("\n\n");
   };
 
-  const [isGenerating, setIsGenerating] = useState(false);
-
   const generatePDF = async () => {
     setIsGenerating(true);
     try {
@@ -146,35 +147,136 @@ export default function ResumeBuilder({ initialContent }) {
     }
   };
 
+  const handleDirectEdit = async () => {
+    try {
+      await saveResumeFn(previewContent);
+      setIsDirectEditing(false);
+      toast.success("Resume saved successfully!");
+    } catch (error) {
+      toast.error(error.message || "Failed to save resume");
+    }
+  };
+
+  // Parse markdown content to form values
+  const parseMarkdownToForm = (content) => {
+    try {
+      const formData = {
+        contactInfo: {},
+        summary: "",
+        skills: "",
+        experience: [],
+        education: [],
+        projects: [],
+      };
+
+      const sections = content.split(/^##\s+/m).filter(Boolean);
+      
+      sections.forEach(section => {
+        const [title, ...contentLines] = section.trim().split('\n');
+        const sectionContent = contentLines.join('\n').trim();
+
+        if (title.includes('Professional Summary')) {
+          formData.summary = sectionContent;
+        } else if (title.includes('Skills')) {
+          formData.skills = sectionContent;
+        } else if (title.includes('Work Experience')) {
+          // Parse experience entries
+          const entries = sectionContent.split(/^###\s+/m).filter(Boolean);
+          formData.experience = entries.map(entry => {
+            const [titleLine, dateLine, ...description] = entry.trim().split('\n');
+            const [title, organization] = titleLine.split(' @ ');
+            const [startDate, endDate] = dateLine.split(' - ');
+            return {
+              title,
+              organization,
+              startDate,
+              endDate: endDate === 'Present' ? '' : endDate,
+              current: endDate === 'Present',
+              description: description.join('\n').trim()
+            };
+          });
+        } else if (title.includes('Education')) {
+          // Parse education entries
+          const entries = sectionContent.split(/^###\s+/m).filter(Boolean);
+          formData.education = entries.map(entry => {
+            const [titleLine, dateLine, ...description] = entry.trim().split('\n');
+            const [title, organization] = titleLine.split(' @ ');
+            const [startDate, endDate] = dateLine.split(' - ');
+            return {
+              title,
+              organization,
+              startDate,
+              endDate: endDate === 'Present' ? '' : endDate,
+              current: endDate === 'Present',
+              description: description.join('\n').trim()
+            };
+          });
+        } else if (title.includes('Projects')) {
+          // Parse project entries
+          const entries = sectionContent.split(/^###\s+/m).filter(Boolean);
+          formData.projects = entries.map(entry => {
+            const [titleLine, dateLine, ...description] = entry.trim().split('\n');
+            const [title, organization] = titleLine.split(' @ ');
+            const [startDate, endDate] = dateLine.split(' - ');
+            return {
+              title,
+              organization,
+              startDate,
+              endDate: endDate === 'Present' ? '' : endDate,
+              current: endDate === 'Present',
+              description: description.join('\n').trim()
+            };
+          });
+        } else if (title.includes('<div align="center">')) {
+          // Parse contact info from the content between <div align="center"> tags
+          const contactSection = sectionContent.match(/<div align="center">\n\n(.*?)\n\n<\/div>/s);
+          if (contactSection && contactSection[1]) {
+            const contactParts = contactSection[1].split(' | ');
+            contactParts.forEach(part => {
+              if (part.includes('📧')) {
+                formData.contactInfo.email = part.replace('📧', '').trim();
+              } else if (part.includes('📱')) {
+                formData.contactInfo.mobile = part.replace('📱', '').trim();
+              } else if (part.includes('💼')) {
+                const match = part.match(/\[LinkedIn\]\((.*?)\)/);
+                if (match) formData.contactInfo.linkedin = match[1];
+              } else if (part.includes('🐦')) {
+                const match = part.match(/\[Twitter\]\((.*?)\)/);
+                if (match) formData.contactInfo.twitter = match[1];
+              }
+            });
+          }
+        }
+      });
+
+      return formData;
+    } catch (error) {
+      console.error('Error parsing markdown:', error);
+      return null;
+    }
+  };
+
+  // Update form when markdown content changes
+  const handleMarkdownChange = (newContent) => {
+    setPreviewContent(newContent);
+    if (isDirectEditing) {
+      const formData = parseMarkdownToForm(newContent);
+      if (formData) {
+        reset(formData);
+      }
+    }
+  };
+
   return (
-    <div data-color-mode="light" className="space-y-8 max-w-7xl mx-auto px-4 py-8">
-      <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
-        <h1 className="font-bold text-5xl md:text-6xl bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
-          Resume Builder
-        </h1>
-        <div className="space-x-3">
-          <Button
-            variant="destructive"
-            onClick={handleSubmit(onSubmit)}
-            disabled={isSaving}
-            className="shadow-lg hover:shadow-xl transition-all duration-300"
-          >
-            {isSaving ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              <>
-                <Save className="h-4 w-4" />
-                Save
-              </>
-            )}
-          </Button>
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">Resume Builder</h1>
+        <div className="flex gap-2">
           <Button
             onClick={generatePDF}
             disabled={isGenerating}
-            className="shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-r from-blue-600 to-purple-600"
+            variant="outline"
+            className="gap-2"
           >
             {isGenerating ? (
               <>
@@ -188,12 +290,52 @@ export default function ResumeBuilder({ initialContent }) {
               </>
             )}
           </Button>
+          {activeTab === "preview" && (
+            <Button
+              onClick={() => {
+                if (isDirectEditing) {
+                  handleDirectEdit();
+                } else {
+                  setIsDirectEditing(true);
+                  setResumeMode("edit");
+                }
+              }}
+              variant="outline"
+              className="gap-2"
+              disabled={isSaving}
+            >
+              {isDirectEditing ? (
+                isSaving ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4" />
+                    Save
+                  </>
+                )
+              ) : (
+                <>
+                  <Edit className="h-4 w-4" />
+                  Edit
+                </>
+              )}
+            </Button>
+          )}
         </div>
       </div>
 
       <Tabs 
         value={activeTab} 
-        onValueChange={setActiveTab}
+        onValueChange={(value) => {
+          setActiveTab(value);
+          if (value === "preview") {
+            setIsDirectEditing(false);
+            setResumeMode("preview");
+          }
+        }}
         className="border rounded-xl p-4 bg-white shadow-lg"
       >
         <TabsList className="grid w-full grid-cols-2 mb-4">
@@ -399,43 +541,21 @@ export default function ResumeBuilder({ initialContent }) {
         </TabsContent>
 
         <TabsContent value="preview">
-          {activeTab === "preview" && (
-            <Button
-              variant="link"
-              type="button"
-              className="mb-2"
-              onClick={() =>
-                setResumeMode(resumeMode === "preview" ? "edit" : "preview")
-              }
-            >
-              {resumeMode === "preview" ? (
-                <>
-                  <Edit className="h-4 w-4" />
-                  Edit Resume
-                </>
-              ) : (
-                <>
-                  <Monitor className="h-4 w-4" />
-                  Show Preview
-                </>
-              )}
-            </Button>
-          )}
-
-          {activeTab === "preview" && resumeMode !== "preview" && (
+          {activeTab === "preview" && !isDirectEditing && resumeMode !== "preview" && (
             <div className="flex p-3 gap-2 items-center border-2 border-yellow-600 text-yellow-600 rounded mb-2">
               <AlertTriangle className="h-5 w-5" />
               <span className="text-sm">
-                You will lose editied markdown if you update the form data.
+                You will lose edited markdown if you update the form data.
               </span>
             </div>
           )}
           <div className="border rounded-lg">
             <MDEditor
               value={previewContent}
-              onChange={setPreviewContent}
+              onChange={handleMarkdownChange}
               height={800}
               preview={resumeMode}
+              readOnly={!isDirectEditing}
             />
           </div>
           <div className="hidden">
